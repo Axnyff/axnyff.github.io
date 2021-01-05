@@ -60,7 +60,7 @@ DOUBLE  ok
 </p>
 
 Let's try to make our own multiplication, using the loops the language provide us.
-The classic for loop can be done using the <code>?DO ...DEFINITION LOOP</code> <sup><a href="#note1">1</a></sup>.
+The classic for loop can be done using the <code>?DO ...DEFINITION LOOP</code> <sup id="ref1"><a href="#note1">1</a></sup>.
 Here's our solution:
 <pre>
 <span class="comment">\ hey, this is a comment</span>
@@ -290,15 +290,24 @@ $ gforth part2.fs
 Ok, This works!
 </p>
 <p>
-Using variables, part2 was actually way simpler that part1, kind of defeating the purpose of the language.
-Maybe I'm just not used to it but stack manipulation does seem really mindbending.
-What I did like about this language it does not look like there's a lot of special citizens: besides the weird thing about compile time vs runtime word, pretty much everything is a word.
+Using variables, part2 was actually way simpler that part1, kind of defeating the purpose of the language... <br /> <br />
+Maybe I'm just not used to it but stack manipulation does seem really mindbending.<br /><br />
+What I did like about this language it does not look like there's a lot of special citizens: It looks like everything is a word: <br />
 If you type something, the language will try and see if it knows this word and otherwise try and fallback to a number.
-For instance, here we are remapping 3 to 4. Forth will recognize 3 as a word and interpret it as 4.  <sup><a href="#note2">2</a></sup>
+For instance, here we are remapping 3 to 4. Forth will recognize 3 as a word and interpret it as 4.  <sup id="ref2"><a href="#note2">2</a></sup>
 </p>
 <pre>
 : 3 4 ;  ok
 1 3 + . 5  ok
+</pre>
+<p>
+Operators are not something special, they're just words which happen to be character. For instance, let's define <code>**</code> as exponentiation:
+</p>
+<pre>
+<span class="comment">/ This is pretty much the same code as MULT but the operator is * and the starting element is 1</span>
+: **
+  1 -ROT 0 ?DO DUP ROT * SWAP LOOP DROP ; ok
+2 30 ** . 1073741824  ok
 </pre>
 <p>
 </p>
@@ -307,6 +316,7 @@ For instance, here we are remapping 3 to 4. Forth will recognize 3 as a word and
 
 <ol>
   <li id="note1">
+  <a href="#ref1">^</a>
   The <code>DO</code> keyword also exists but it's a bit tricky: it will behave rather unexpectedly if both the indexes are the same:
 
   <blockquote class="m">
@@ -326,6 +336,7 @@ For instance, here we are remapping 3 to 4. Forth will recognize 3 as a word and
   </blockquote>
   </li>
   <li id="note2">
+  <a href="#ref2">^</a>
   This made me think my <code>MULT</code> implementation was wrong and I spent like 15 minutes before realizing I had cursed my repl. With great power...
   </li>
 </ol>
