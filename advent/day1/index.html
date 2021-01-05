@@ -9,7 +9,7 @@
 <body>
 <main>
 <h1>Day 1: Forth</h1>
-<h2>Language introduction</h2>
+<h3>Language introduction</h3>
 <p>
 Forth is a pretty interesting language. It's called a concatenative / stack based language. What this means is that operators or functions will pick up what's currently on the stack as argument to manipulate.
 Let's try a session to see:
@@ -30,18 +30,18 @@ Backtrace:
 </pre>
 </p>
 <p>
-If we enter a number, it will simply be added to the top of the stack. So after our three first input, our stack contains <code>[2, 1, 1]</code>.
+If we enter a number, it will simply be added to the top of the stack. So after our three first input, our stack contains <code>[1, 1, 2]</code>.
 Then we enter <code>+</code>. This will take the first two elements of the stack, add them together and put the result back into the stack.
-The stack is now <code>[3, 1]</code>.
-We can then do use <code>.</code> to pop the top element of the stack and print it. If we try to use <code>+</code> another time, it will fail as our stack only contains a one.
+The stack is now <code>[1, 3]</code>.
+We can then use <code>.</code> to pop the top element of the stack and print it. <br />If we try to use <code>+</code> another time, it will fail as our stack only contains a one.
 </p>
 <p>
-As the stack is essential to this language, there's a lot of operation to affect the content of the stack. 
+As the stack is essential to this language, there's a lot of operation to affect its content.
 <ul>
   <li><code>DUP</code>: duplicates the top element of the stack.</li>
   <li><code>SWAP</code>: swaps the top two elements of the stack.</li>
-  <li><code>ROT</code>: rotate the top three elements of the stack.</li>
-  <li><code>DROP</code>: drop the top element from the stack.</li>
+  <li><code>ROT</code>: rotates the top three elements of the stack.</li>
+  <li><code>DROP</code>: drops the top element from the stack.</li>
 </ul>
 </p>
 <p>
@@ -56,54 +56,37 @@ DOUBLE  ok
 </p>
 
 Let's try to make our own multiplication, using the loops the language provide us.
-The classic for loop can be done using the <code>DO ...DEFINITION LOOP</code>.
-However, we'll preferably use the <code>?DO</code> keyword because <code>DO</code> will behave rather unexpectedly if both the indexes are the same:
-
-<blockquote class="m">
-       Here is something to beware of: suppose the initial indices for the DO loop are equal:
-       that is, something like
-
-              17  17  DO   stuff   LOOP
-
-       then the loop will be executed 232-1 times! As the ANS Standard document says,
-       “This is intolerable.” Therefore ANS Forth defines a special word, ?DO,  that will skip
-       the loop if the indices are equal, and execute it if they are not.
-       <br />
-       <br />
-      <a href="http://galileo.phys.virginia.edu/classes/551.jvn.fall01/primer.htm">
-        A beginner's guide to Forth
-      </a>
-</blockquote>
-
+The classic for loop can be done using the <code>?DO ...DEFINITION LOOP</code> <sup><a href="#note1">1</a></sup>.
 Here's our solution:
 <pre>
-\ hey, this is a comment
+<span class="comment">\ hey, this is a comment</span>
 
-: MULT \ Let's assume we want to multiply 5 and 3, so we have a stack like [3, 5]
-  0 \ this will store the result [3, 5, 0]
-  -ROT \ backward rotation [0, 3, 5]
-  0 ?DO \ we will loop from 0 to 5 [0, 3]
-  DUP ROT \ [3, 0, 3]
-  + SWAP \ we need to stop for the next iteration 
-  \ ( forgot about this one on the first try) [3, 3]
-  LOOP DROP \ we need to drop the operand;
+: MULT <span class="comment">\ Let's assume we want to multiply 5 and 3, so we have a stack like [3, 5]</span>
+  0 <span class="comment">\ this will store the result [3, 5, 0]</span>
+  -ROT <span class="comment">\ backward rotation [0, 3, 5]</span>
+  0 ?DO <span class="comment">\ we will loop from 0 to 5 [0, 3]</span>
+  DUP ROT <span class="comment">\ [3, 0, 3]</span>
+  + SWAP <span class="comment">\ we need to stop for the next iteration </span>
+  <span class="comment">\ ( forgot about this one on the first try) [3, 3]</span>
+  LOOP DROP <span class="comment">\ we need to drop the operand</span>
+  ;
 </pre>
 
 So yeah, even a simple case like this turns out to be pretty complicated. Maybe I did something wrong but it works at least. Ok, now we should be ready to try and solve day 1.
 
 <hr />
-<h2>Solving the problem</h2>
+<h3>Part 1</h3>
 <p>
 The first day is pretty simple, as usual: our input is a list of numbers and we need to find two of those whose sum is 2020 and multiple the two.
 For example:
-<code>
+<pre>
 1721
 979
 366
 299
 675
 1456
-</code>
+</pre>
 In this list, we have 
 <code>1721 + 299 = 2020</code>
 so the answer is 
@@ -122,11 +105,11 @@ So let's define a first method:
 <pre>
 
 : SOLVE
-  300 0 ?DO \ we could properly calculate the size of item but a big number will do the trick.
-    \ this will loop from 0 to 300.
-    S" data.fs" INCLUDED \ s" is a word to define a string (which will be ended by ") and then included load that files dynamically
-    I 0 ?DO DROP LOOP \ I is a magic word that will contain the index of the current loop. Here we want to loop from 0 to I and drop elements
-    FIND-NUMBER \ we can then call find-number with the stack properly prepared.
+  300 0 ?DO <span class="comment">\ we could properly calculate the size of item but a big number will do the trick.</span>
+    <span class="comment">\ this will loop from 0 to 300.</span>
+    S" data.fs" INCLUDED <span class="comment">\ s" is a word to define a string (which will be ended by ") and then included load that files dynamically</span>
+    I 0 ?DO DROP LOOP <span class="comment">\ I is a magic word that will contain the index of the current loop. Here we want to loop from 0 to I and drop elements</span>
+    FIND-NUMBER <span class="comment">\ we can then call find-number with the stack properly prepared.</span>
   LOOP ;
 </pre>
 
@@ -136,17 +119,17 @@ This is a special stack that can be used inside a function. It needs to be empti
 <pre>
 
 : FIND-NUMBER
-  >r \ move the top of the main stack to the return stack
-  BEGIN \ start an undefinite loop, it's end will be decided by the UNTIL keyword
-  DUP \ we need to duplicate the top item in case it's sum is actually 2020
-  R@ \ duplicate the top item on the return stack into the stack
-  + 2020 = \ creates a boolean if the sum equals 2020 ( meaning -1 for true, 0 for false)
-  IF \ an if statement ! it looks at the stop of the stack. If the boolean is true then we are done here
-  R@ * . CR BYE \ show the multiplication result, a line break and then stop execution
-  ELSE DROP \ otherwise we drop that item
-  THEN \ then is actually the end of the if statement in that language
-  depth 0= UNTIL \ we keep that loop while depth 0= is false, depth being the number of items in the stack
-  r> DROP \manual garbage collection, we put the item on the return stack back to the main stack and then drop it;
+  >r <span class="comment">\ move the top of the main stack to the return stack</span>
+  BEGIN <span class="comment">\ start an undefinite loop, it's end will be decided by the UNTIL keyword</span>
+  DUP <span class="comment">\ we need to duplicate the top item in case it's sum is actually 2020</span>
+  R@ <span class="comment">\ duplicate the top item on the return stack into the stack</span>
+  + 2020 = <span class="comment">\ creates a boolean if the sum equals 2020 ( meaning -1 for true, 0 for false)</span>
+  IF <span class="comment">\ an if statement ! it looks at the stop of the stack. If the boolean is true then we are done here</span>
+  R@ * . CR BYE <span class="comment">\ show the multiplication result, a line break and then stop execution</span>
+  ELSE DROP <span class="comment">\ otherwise we drop that item</span>
+  THEN <span class="comment">\ then is actually the end of the if statement in that language</span>
+  depth 0= UNTIL <span class="comment">\ we keep that loop while depth 0= is false, depth being the number of items in the stack</span>
+  r> DROP <span class="comment">\manual garbage collection, we put the item on the return stack back to the main stack and then drop it;</span>
 
 </pre>
 <p>
@@ -155,11 +138,11 @@ Ok let's try it:
 <pre>
 $ gforth part1.fs
 1013211
-<pre>
+</pre>
 <p>
 Correct answer, Let's move on to part 2!
 </p>
-
+<h3>Part 2</h3>
 <p>
 In the second part, we now need to find <b>three</b> numbers that add up to 2020 and show the result of their multiplication.
 
@@ -187,37 +170,37 @@ We actually need the number of items in our list this time. So we dynamically in
 
 : SOLVE
 
-  \ initialization phase
+  <span class="comment">\ initialization phase</span>
   0 INDEX1 !
   0 INDEX2 !
   BEGIN
     S" data.fs" INCLUDED
-    INDEX1 @ 0 ?DO DROP LOOP \ we drop index1 numbers
-    VALUE1 ! \ set the top of the stack to value1
-    INDEX2 @ 0 ?DO DROP LOOP \ drop index2 numbers
-    VALUE2 ! \ set the top of the stack to value2
+    INDEX1 @ 0 ?DO DROP LOOP <span class="comment">\ we drop index1 numbers</span>
+    VALUE1 ! <span class="comment">\ set the top of the stack to value1</span>
+    INDEX2 @ 0 ?DO DROP LOOP <span class="comment">\ drop index2 numbers</span>
+    VALUE2 ! <span class="comment">\ set the top of the stack to value2</span>
 
-    \ nested loop that will test the remaining stack item forming a correct triplet
+    <span class="comment">\ nested loop that will test the remaining stack item forming a correct triplet</span>
     BEGIN
-      DUP \ duplicates the top of the stack in case it's the correct one
+      DUP <span class="comment">\ duplicates the top of the stack in case it's the correct one</span>
       VALUE1 @
       VALUE2 @
       + +
       2020 =
-      IF \ if it's true then we have found the solution
+      IF <span class="comment">\ if it's true then we have found the solution</span>
         VALUE1 @
         VALUE2 @
         * * . CR BYE
-      THEN DROP \ otherwise drop the duplicated item
+      THEN DROP <span class="comment">\ otherwise drop the duplicated item</span>
       depth 0= UNTIL
 
-  INDEX2 @ 1+ INDEX2 ! \ pretty much INDEX2++
-  \ we test if index1 + index2 + 2 = Nbitems
-  \ indeed, we drop index1 items, take one, drop index2 items take one so we need more than nbitems + 2
+  INDEX2 @ 1+ INDEX2 ! <span class="comment">\ pretty much INDEX2++</span>
+  <span class="comment">\ we test if index1 + index2 + 2 = Nbitems</span>
+  <span class="comment">\ indeed, we drop index1 items, take one, drop index2 items take one so we need more than nbitems + 2</span>
   INDEX1 @ INDEX2 @  + 2 + NBITEMS @ = 
   IF
-    0 INDEX2 !  INDEX1 @ 1+ INDEX1 ! \ in this case we set index2 to 0 and increments index1 THEN
-  0 UNTIL \ infinite loop ;
+    0 INDEX2 !  INDEX1 @ 1+ INDEX1 ! <span class="comment">\ in this case we set index2 to 0 and increments index1 THEN</span>
+  0 UNTIL <span class="comment">\ infinite loop ;</span>
 SOLVE
 </pre>
 <pre>
@@ -239,6 +222,31 @@ If you type something, the language will try and see if it knows this word and o
 </pre>
 <p>
 </p>
+<hr />
+<h3>Notes</h3>
+
+<ol>
+  <li id="note1">
+  The <code>DO</code> keyword also exists but it's a bit tricky: it will behave rather unexpectedly if both the indexes are the same:
+
+  <blockquote class="m">
+          Here is something to beware of: suppose the initial indices for the <code>DO</code> loop are equal:
+         that is, something like<br /><br />
+
+         <code>17  17  DO   stuff   LOOP</code><br /><br />
+
+         then the loop will be executed <code>2<sup>32</sup>-1</code> times! As the ANS Standard document says,
+         “This is intolerable.” Therefore ANS Forth defines a special word, <code>?DO</code>,  that will skip
+         the loop if the indices are equal, and execute it if they are not.
+         <br />
+         <br />
+        <a href="http://galileo.phys.virginia.edu/classes/551.jvn.fall01/primer.htm">
+          A beginner's guide to Forth
+        </a>
+  </blockquote>
+</li>
+
+</ol>
 
 </main>
 </body>

@@ -1,15 +1,32 @@
-.inline {
-  display: inline;
-}
-
 main {
+  padding: 0 0.5rem;
   max-width: 50rem;
   margin: 0 auto;
+  line-height: 1.8rem;
+  font-size: 1.1rem;
 }
+
 hr {
   margin: 2rem 0;
 }
 
+code, pre {
+  font-size: 0.9rem;
+  line-height: 1.2rem;
+}
+
+pre {
+  white-space: pre-line;
+  font-size: 0.9rem;
+  line-height: 1.2rem;
+  padding: 0.5rem;
+  border: 2px solid #7FDBFF
+}
+
 .m {
   margin-bottom: 2rem;
+}
+
+.comment {
+  color: #777;
 }
