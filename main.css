@@ -1,7 +1,7 @@
 main {
   padding: 0 0.5rem;
   max-width: 50rem;
-  margin: 0 auto;
+  margin: 0 auto 5rem;
   line-height: 1.8rem;
   font-size: 1.1rem;
 }
@@ -16,7 +16,7 @@ code, pre {
 }
 
 pre {
-  white-space: pre-line;
+  white-space: pre-wrap;
   font-size: 0.9rem;
   line-height: 1.2rem;
   padding: 0.5rem;

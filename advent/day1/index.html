@@ -13,27 +13,31 @@
 <p>
 Forth is a pretty interesting language. It's called a concatenative / stack based language. What this means is that operators or functions will pick up what's currently on the stack as argument to manipulate.
 Let's try a session to see:
-
+</p>
 <pre>
 $ gforth
 Gforth 0.7.3, Copyright (C) 1995-2008 Free Software Foundation, Inc.
 Gforth comes with ABSOLUTELY NO WARRANTY; for details type `license'
 Type `bye' to exit
-1  ok
-1  ok
-2  ok
+\ let's enter some numbers !  ok
+1 2 3  ok
+\ our stack now contains [1, 2, 3]. We can see the full contents with .s  ok
+.s <3> 1 2 3  ok
 +  ok
-. 3  ok
-:6: Stack underflow
+.s <2> 1 5  ok
+. 5  ok
+.s <1> 1  ok
++
+:9: Stack underflow
 >>>+<<<
 Backtrace:
 </pre>
-</p>
 <p>
-If we enter a number, it will simply be added to the top of the stack. So after our three first input, our stack contains <code>[1, 1, 2]</code>.
-Then we enter <code>+</code>. This will take the first two elements of the stack, add them together and put the result back into the stack.
-The stack is now <code>[1, 3]</code>.
-We can then use <code>.</code> to pop the top element of the stack and print it. <br />If we try to use <code>+</code> another time, it will fail as our stack only contains a one.
+After each input, the interpreter will answer ok if everything went right.<br /><br />
+Numbers are put on the top of the stack. <br />
+<code> \ </code> starts a comment.<br />
+<code>+</code> will add the two items on the top of the stack and put the result back on it.<br />
+<code>.</code> will pop and output the top item of the stack.
 </p>
 <p>
 As the stack is essential to this language, there's a lot of operation to affect its content.
@@ -60,19 +64,39 @@ The classic for loop can be done using the <code>?DO ...DEFINITION LOOP</code> <
 Here's our solution:
 <pre>
 <span class="comment">\ hey, this is a comment</span>
+<span class="comment">\ Let's assume we want to multiply 5 and 3, so we start with [3, 5]</span>
+: MULT <span class="comment">\ [3, 5]</span>
 
-: MULT <span class="comment">\ Let's assume we want to multiply 5 and 3, so we have a stack like [3, 5]</span>
-  0 <span class="comment">\ this will store the result [3, 5, 0]</span>
-  -ROT <span class="comment">\ backward rotation [0, 3, 5]</span>
-  0 ?DO <span class="comment">\ we will loop from 0 to 5 [0, 3]</span>
+  <span class="comment">\ used to store the result</span>
+  0 <span class="comment">\ [3, 5, 0]</span>
+
+  <span class="comment">\ backward rotation</span>
+  -ROT <span class="comment">\ [0, 3, 5]</span>
+
+  <span class="comment">\ we loop from 0 to 5</span>
+  0 ?DO <span class="comment">\ [0, 3]</span>
+
+  <span class="comment">\ duplicate then rotate</span>
   DUP ROT <span class="comment">\ [3, 0, 3]</span>
-  + SWAP <span class="comment">\ we need to stop for the next iteration </span>
-  <span class="comment">\ ( forgot about this one on the first try) [3, 3]</span>
-  LOOP DROP <span class="comment">\ we need to drop the operand</span>
+
+  + <span class="comment">\ [3, 3]</span>
+
+  <span class="comment">\ Here the top item is the result and the last is the operand, so we need to swap them</span>
+  <span class="comment">\ (I forgot about this one on the first try)</span>
+
+  SWAP
+  <span class="comment">\ we need to drop the operand after the loop so our stack</span>
+  <span class="comment">\ has replaced the two operands with the result</span>
+  LOOP DROP
   ;
 </pre>
 
-So yeah, even a simple case like this turns out to be pretty complicated. Maybe I did something wrong but it works at least. Ok, now we should be ready to try and solve day 1.
+<p>
+So yeah, even a simple case like this turns out to be pretty complicated. Maybe my implementation could be
+a bit simplet but it works at least. 
+</p>
+<p>Ok, now we should be ready to try and solve day 1!
+</p>
 
 <hr />
 <h3>Part 1</h3>
@@ -95,7 +119,7 @@ so the answer is
 
 <p>
 Luckily for us, the puzzle input is a list of number so it's a valid forth program.
-For the first part, we're gonna do a pretty dirty solution. The INCLUDED word allows us to dynamiccaly include another forth program so we will be able to loop through our list of numbers and try if any following number makes the correct sum.
+For the first part, we're gonna do a pretty dirty solution. The INCLUDED word allows us to dynamiccaly include another forth program file so we will be able to loop through our list of numbers and try if any following number makes the correct sum.
 </p>
 
 <p>
@@ -105,12 +129,23 @@ So let's define a first method:
 <pre>
 
 : SOLVE
-  300 0 ?DO <span class="comment">\ we could properly calculate the size of item but a big number will do the trick.</span>
-    <span class="comment">\ this will loop from 0 to 300.</span>
-    S" data.fs" INCLUDED <span class="comment">\ s" is a word to define a string (which will be ended by ") and then included load that files dynamically</span>
-    I 0 ?DO DROP LOOP <span class="comment">\ I is a magic word that will contain the index of the current loop. Here we want to loop from 0 to I and drop elements</span>
-    FIND-NUMBER <span class="comment">\ we can then call find-number with the stack properly prepared.</span>
-  LOOP ;
+
+  <span class="comment">\ we could properly calculate the number of items</span>
+  <span class="comment">\ but a big enough number will do the trick.</span>
+  <span class="comment">\ this will loop backward from 0 to 300.</span>
+  300 0 ?DO
+
+  <span class="comment">\ s" is a word to define a string (which will be ended by ")</span>
+  S" data.fs" INCLUDED 
+
+  <span class="comment">\ I is a magic word that will contain the index of the current loop.</span>
+  <span class="comment">\ Here we want to loop from 0 to I and drop elements</span>
+  I 0 ?DO DROP LOOP
+
+  <span class="comment">\ we can then call find-number with the stack properly prepared.</span>
+  FIND-NUMBER
+  LOOP
+  ;
 </pre>
 
 <p>
@@ -119,18 +154,45 @@ This is a special stack that can be used inside a function. It needs to be empti
 <pre>
 
 : FIND-NUMBER
-  >r <span class="comment">\ move the top of the main stack to the return stack</span>
-  BEGIN <span class="comment">\ start an undefinite loop, it's end will be decided by the UNTIL keyword</span>
-  DUP <span class="comment">\ we need to duplicate the top item in case it's sum is actually 2020</span>
-  R@ <span class="comment">\ duplicate the top item on the return stack into the stack</span>
-  + 2020 = <span class="comment">\ creates a boolean if the sum equals 2020 ( meaning -1 for true, 0 for false)</span>
-  IF <span class="comment">\ an if statement ! it looks at the stop of the stack. If the boolean is true then we are done here</span>
-  R@ * . CR BYE <span class="comment">\ show the multiplication result, a line break and then stop execution</span>
-  ELSE DROP <span class="comment">\ otherwise we drop that item</span>
-  THEN <span class="comment">\ then is actually the end of the if statement in that language</span>
-  depth 0= UNTIL <span class="comment">\ we keep that loop while depth 0= is false, depth being the number of items in the stack</span>
-  r> DROP <span class="comment">\manual garbage collection, we put the item on the return stack back to the main stack and then drop it;</span>
+  <span class="comment">\ this move the top of the main stack to the return stack</span>
+  >r 
 
+  <span class="comment">\ start an undefinite loop, its end will be decided by the UNTIL keyword</span>
+  BEGIN
+
+    <span class="comment">\ we need to duplicate the top item</span>
+    <span class="comment">\ we'll need it for the multiplication if it sums to 2020 with the other candidate</span>
+    DUP
+
+    <span class="comment">\ duplicate the top item on the return stack into the stack</span>
+    R@
+
+    <span class="comment">\ = puts -1 (true) if the two top items are equal, 0 (false) otherwise</span>
+    + 2020 =
+
+    <span class="comment">\ an if statement !</span>
+    <span class="comment">\ It looks at the stop of the stack and executes the next instructions</span>
+    <span class="comment">\ until the ELSE or THEN keyword</span>
+    IF
+
+    <span class="comment">\ If the condtion is true, we are done here</span>
+    <span class="comment">\ We show the multiplication, and line break and stop the execution</span>
+    R@ * . CR BYE 
+
+    <span class="comment">\ otherwise we drop that item</span>
+    ELSE DROP
+
+    <span class="comment">\ then is actually the end of the if statement in that language</span>
+    THEN
+
+    <span class="comment">\ we keep that loop while there is some items in the stack</span>
+    depth 0=
+  UNTIL
+
+  <span class="comment">\ manual garbage collection</span>
+  <span class="comment">\ we put the item on the return stack back to the main stack and then drop it</span>
+  r> DROP
+  ;
 </pre>
 <p>
 Ok let's try it:
@@ -144,9 +206,9 @@ Correct answer, Let's move on to part 2!
 </p>
 <h3>Part 2</h3>
 <p>
-In the second part, we now need to find <b>three</b> numbers that add up to 2020 and show the result of their multiplication.
+In the second part, we now need to find three numbers that add up to 2020 and show the result of their multiplication.
 
-For this one, I tried to keep with only the stack and the return stack but this was way too hard a task. Apparently, Forth internally uses the return stack for loop indexes so I can't mix using a numbered loop and the return stack in a function. So we're gonna use variables to solve this one. We need to declare variables with the Variable key word. Then, to put the top of the stack to the variable we need to do <code>VARIABLENAME !</code> and to push the variables value to the top of the stack we do <code>VARIABLENAME @</code>.
+For this one, I tried to keep with only the stack and the return stack but this was way too hard a task. Apparently, Forth internally uses the return stack for loop indexes so I can't mix using a numbered loop and the return stack in a function. <br /> <br />So we're gonna use variables to solve this one. To declare a variable, we use the  <code>VARIABLE</code> word. <br />Then, to put the top of the stack to the variable we need to do <code>VARIABLENAME !</code> and to push the variables value to the top of the stack we do <code>VARIABLENAME @</code>.
 </p>
 <pre>
 VARIABLE INDEX1
@@ -170,37 +232,54 @@ We actually need the number of items in our list this time. So we dynamically in
 
 : SOLVE
 
-  <span class="comment">\ initialization phase</span>
   0 INDEX1 !
   0 INDEX2 !
+
   BEGIN
     S" data.fs" INCLUDED
-    INDEX1 @ 0 ?DO DROP LOOP <span class="comment">\ we drop index1 numbers</span>
-    VALUE1 ! <span class="comment">\ set the top of the stack to value1</span>
-    INDEX2 @ 0 ?DO DROP LOOP <span class="comment">\ drop index2 numbers</span>
-    VALUE2 ! <span class="comment">\ set the top of the stack to value2</span>
+
+    <span class="comment">\ we drop index1 numbers</span>
+    INDEX1 @ 0 ?DO DROP LOOP 
+
+    <span class="comment">\ set the top of the stack to value1</span>
+    VALUE1 !
+
+    <span class="comment">\ drop index2 numbers</span>
+    INDEX2 @ 0 ?DO DROP LOOP
+
+    <span class="comment">\ set the top of the stack to value2</span>
+    VALUE2 !
 
     <span class="comment">\ nested loop that will test the remaining stack item forming a correct triplet</span>
     BEGIN
-      DUP <span class="comment">\ duplicates the top of the stack in case it's the correct one</span>
+      <span class="comment">\ duplicates the top of the stack in case it's the correct one</span>
+      DUP
       VALUE1 @
       VALUE2 @
       + +
       2020 =
-      IF <span class="comment">\ if it's true then we have found the solution</span>
-        VALUE1 @
-        VALUE2 @
-        * * . CR BYE
-      THEN DROP <span class="comment">\ otherwise drop the duplicated item</span>
-      depth 0= UNTIL
+      <span class="comment">\ if it's true then we have found the solution</span>
+      IF VALUE1 @ VALUE2 @ * * . CR BYE
 
-  INDEX2 @ 1+ INDEX2 ! <span class="comment">\ pretty much INDEX2++</span>
-  <span class="comment">\ we test if index1 + index2 + 2 = Nbitems</span>
-  <span class="comment">\ indeed, we drop index1 items, take one, drop index2 items take one so we need more than nbitems + 2</span>
-  INDEX1 @ INDEX2 @  + 2 + NBITEMS @ = 
-  IF
-    0 INDEX2 !  INDEX1 @ 1+ INDEX1 ! <span class="comment">\ in this case we set index2 to 0 and increments index1 THEN</span>
-  0 UNTIL <span class="comment">\ infinite loop ;</span>
+      <span class="comment">\ otherwise drop the duplicated item</span>
+      ELSE DROP THEN depth 0=
+    UNTIL
+
+    <span class="comment">\ pretty much INDEX2++</span>
+    INDEX2 @ 1+ INDEX2 !
+
+    <span class="comment">\ we test if index1 + index2 + 2 = NBITEMS</span>
+    <span class="comment">\ indeed, we drop index1 + index2 items and pop two</span>
+    <span class="comment"> \ for value1 and value2 se so we need more than NBITEMS + 2</span>
+    INDEX1 @ INDEX2 @  + 2 + NBITEMS @ =
+    IF
+
+    <span class="comment">\ in this case we set index2 to 0 and increments index1</span>
+    0 INDEX2 !  INDEX1 @ 1+ INDEX1 !
+    THEN
+    <span class="comment">\ infinite loop ;</span>
+    0 UNTIL ;
+
 SOLVE
 </pre>
 <pre>
@@ -215,6 +294,7 @@ Using variables, part2 was actually way simpler that part1, kind of defeating th
 Maybe I'm just not used to it but stack manipulation does seem really mindbending.
 What I did like about this language it does not look like there's a lot of special citizens: besides the weird thing about compile time vs runtime word, pretty much everything is a word.
 If you type something, the language will try and see if it knows this word and otherwise try and fallback to a number.
+For instance, here we are remapping 3 to 4. Forth will recognize 3 as a word and interpret it as 4.  <sup><a href="#note2">2</a></sup>
 </p>
 <pre>
 : 3 4 ;  ok
@@ -244,8 +324,10 @@ If you type something, the language will try and see if it knows this word and o
           A beginner's guide to Forth
         </a>
   </blockquote>
-</li>
-
+  </li>
+  <li id="note2">
+  This made me think my <code>MULT</code> implementation was wrong and I spent like 15 minutes before realizing I had cursed my repl. With great power...
+  </li>
 </ol>
 
 </main>
