@@ -1,0 +1,15 @@
+.inline {
+  display: inline;
+}
+
+main {
+  max-width: 50rem;
+  margin: 0 auto;
+}
+hr {
+  margin: 2rem 0;
+}
+
+.m {
+  margin-bottom: 2rem;
+}
