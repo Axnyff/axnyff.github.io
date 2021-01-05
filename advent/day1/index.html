@@ -19,9 +19,9 @@ $ gforth
 Gforth 0.7.3, Copyright (C) 1995-2008 Free Software Foundation, Inc.
 Gforth comes with ABSOLUTELY NO WARRANTY; for details type `license'
 Type `bye' to exit
-\ let's enter some numbers !  ok
+<span class="comment">\ let's enter some numbers !</span>  ok
 1 2 3  ok
-\ our stack now contains [1, 2, 3]. We can see the full contents with .s  ok
+<span class="comment">\ our stack now contains [1, 2, 3]. We can see the full contents with .s </span> ok
 .s <3> 1 2 3  ok
 +  ok
 .s <2> 1 5  ok
@@ -63,7 +63,6 @@ Let's try to make our own multiplication, using the loops the language provide u
 The classic for loop can be done using the <code>?DO ...DEFINITION LOOP</code> <sup id="ref1"><a href="#note1">1</a></sup>.
 Here's our solution:
 <pre>
-<span class="comment">\ hey, this is a comment</span>
 <span class="comment">\ Let's assume we want to multiply 5 and 3, so we start with [3, 5]</span>
 : MULT <span class="comment">\ [3, 5]</span>
 
