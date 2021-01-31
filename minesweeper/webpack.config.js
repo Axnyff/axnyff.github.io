@@ -1,5 +1,6 @@
+const webpack = require('webpack');
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const CopyPlugin = require("copy-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = {
@@ -12,6 +13,7 @@ module.exports = {
     contentBase: path.join(__dirname, "dist"),
     compress: true,
     port: 9000,
+    hot: true,
   },
   module: {
     rules: [
@@ -27,8 +29,6 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, "public", "index.html"),
-    }),
+    new CopyPlugin({ patterns: [{ from: "public" }] }),
   ],
 };

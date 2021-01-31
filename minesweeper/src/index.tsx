@@ -1,11 +1,6 @@
 import React from "react";
 import { render } from "react-dom";
+import App from "./App";
 
-const App = () => {
-  return <div>YOLO</div>;
-};
-
-render(
-  <App />,
-  document.getElementById('app'),
-)
+render(<App />, document.getElementById("app"));
+(module as any).hot.accept();
