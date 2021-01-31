@@ -18,6 +18,10 @@ const Cell = styled.button<{
 }>`
   cursor: pointer;
   position: relative;
+  border: 1px solid;
+  width: 30px;
+  height: 30px;
+  margin: 1px;
   ${({ hasMine }) =>
     hasMine &&
     css`
@@ -26,6 +30,7 @@ const Cell = styled.button<{
   ${({ isRevealed }) =>
     isRevealed &&
     css`
+      border: 0 px;
       background: white;
       cursor: default;
     `}
@@ -51,10 +56,6 @@ const Cell = styled.button<{
         left: calc(50% - 2px);
       }
     `}
-  border: 1px solid;
-  width: 30px;
-  height: 30px;
-  margin: 1px;
 `;
 
 const randInt = (max: number) => Math.floor(Math.random() * max);
@@ -83,7 +84,7 @@ const App = () => {
       setMines(generateMines(key));
       setRevealed([...revealed, key]);
     } else if (mines.includes(key)) {
-      console.log("OH NOES");
+      // Write here losing logic
     } else {
       setRevealed([...revealed, key]);
     }
@@ -93,11 +94,14 @@ const App = () => {
     const res: { [K: string]: number } = {};
 
     for (let i = 0; i < ROWS; i++) {
-      for (let j = 0; j < ROWS; j++) {
+      for (let j = 0; j < COLUMNS; j++) {
         let count = 0;
         for (let x = i - 1; x <= i + 1; x++) {
           for (let y = j - 1; y <= j + 1; y++) {
-            if ((x !== i || y !== j) && mines.includes(getKey(x, y))) {
+            if (x === i && y === j) {
+              continue;
+            }
+            if (mines.includes(getKey(x, y))) {
               count++;
             }
           }
@@ -108,8 +112,6 @@ const App = () => {
     return res;
   }, [mines]);
 
-  console.log(revealed);
-  console.log(revealed);
   return (
     <div>
       {Array.from({ length: ROWS }, (_, i) => (
@@ -137,7 +139,7 @@ const App = () => {
                 }}
                 key={key}
               >
-                {isRevealed && counts[key] !== 0 ? counts[key] : ""}
+                {isRevealed && counts[key]}
               </Cell>
             );
           })}
