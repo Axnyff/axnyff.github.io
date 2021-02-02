@@ -7,6 +7,11 @@ const NB_MINES = 10;
 
 const getKey = (x: number, y: number) => `${x}_${y}`;
 
+const getCoords = (key: string) => {
+  const [x, y] = key.split("_");
+  return [parseInt(x, 10), parseInt(y, 10)];
+};
+
 const Row = styled.div`
   display: flex;
 `;
@@ -25,7 +30,7 @@ const Cell = styled.button<{
   ${({ hasMine }) =>
     hasMine &&
     css`
-      background: green;
+      background: red;
     `}
   ${({ isRevealed }) =>
     isRevealed &&
@@ -73,44 +78,78 @@ const generateMines = (startingPoint: string) => {
   return generatedMines;
 };
 
+const getRevealed = (startPoint: string, count: { [K: string]: number }) => {
+  if (count[startPoint] !== 0) {
+    return [startPoint];
+  }
+
+  const revealed = [startPoint];
+  const toExplore = [startPoint];
+
+  while (toExplore.length) {
+    let item = toExplore.pop()!;
+    const [x, y] = getCoords(item);
+    [
+      [x - 1, y],
+      [x + 1, y],
+      [x, y - 1],
+      [x, y + 1],
+    ].forEach(([x, y]) => {
+      const key = getKey(x, y);
+      if (count[key] !== undefined && !revealed.includes(key)) {
+        revealed.push(key);
+        if (count[key] === 0) {
+          toExplore.push(key);
+        }
+      }
+    });
+  }
+  return revealed;
+};
+
+const computeCounts = (mines: string[]) => {
+  const res: { [K: string]: number } = {};
+
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLUMNS; j++) {
+      let count = 0;
+      for (let x = i - 1; x <= i + 1; x++) {
+        for (let y = j - 1; y <= j + 1; y++) {
+          if (x === i && y === j) {
+            continue;
+          }
+          if (mines.includes(getKey(x, y))) {
+            count++;
+          }
+        }
+      }
+      res[getKey(i, j)] = count;
+    }
+  }
+  return res;
+};
+
 const App = () => {
   const [flags, setFlags] = useState<string[]>([]);
   const [revealed, setRevealed] = useState<string[]>([]);
   const [mines, setMines] = useState<string[]>([]);
+  const [defeat, setDefeat] = useState(false);
+
+  const counts = useMemo(() => {
+    return computeCounts(mines);
+  }, [mines]);
 
   const handleClickCell = (key: string) => {
     if (!mines.length) {
       const newMines: string[] = generateMines(key);
-      setMines(generateMines(key));
-      setRevealed([...revealed, key]);
+      setMines(newMines);
+      setRevealed([...revealed, ...getRevealed(key, computeCounts(newMines))]);
     } else if (mines.includes(key)) {
-      // Write here losing logic
+      setDefeat(true);
     } else {
-      setRevealed([...revealed, key]);
+      setRevealed([...revealed, ...getRevealed(key, counts)]);
     }
   };
-
-  const counts = useMemo(() => {
-    const res: { [K: string]: number } = {};
-
-    for (let i = 0; i < ROWS; i++) {
-      for (let j = 0; j < COLUMNS; j++) {
-        let count = 0;
-        for (let x = i - 1; x <= i + 1; x++) {
-          for (let y = j - 1; y <= j + 1; y++) {
-            if (x === i && y === j) {
-              continue;
-            }
-            if (mines.includes(getKey(x, y))) {
-              count++;
-            }
-          }
-        }
-        res[getKey(i, j)] = count;
-      }
-    }
-    return res;
-  }, [mines]);
 
   return (
     <div>
@@ -122,7 +161,7 @@ const App = () => {
             return (
               <Cell
                 type="button"
-                hasMine={mines.includes(key)}
+                hasMine={defeat && mines.includes(key)}
                 hasFlag={flags.includes(key)}
                 isRevealed={isRevealed}
                 onClick={() => handleClickCell(key)}
@@ -139,7 +178,7 @@ const App = () => {
                 }}
                 key={key}
               >
-                {isRevealed && counts[key]}
+                {isRevealed && counts[key] !== 0 && counts[key]}
               </Cell>
             );
           })}
